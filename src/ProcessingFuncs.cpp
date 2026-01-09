@@ -47,6 +47,25 @@ namespace ProcessingFuncs {
           }
     }
 
+    std::string FsTimeToString(fs::file_time_type time){
+      auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+        time - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
+      );
+
+      // Convert to time_t (C-style time)
+      std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
+
+      // Convert to string
+      std::string timeStr = std::ctime(&cftime);
+
+      // Remove the newline added by ctime
+      if (!timeStr.empty() && timeStr.back() == '\n') {
+          timeStr.pop_back();
+      }
+      return timeStr;
+    }
+
+    /*
     ftxui::Elements GetLayout(ftxui::Component& menu){
         return ftxui::hbox({
 
@@ -79,5 +98,6 @@ namespace ProcessingFuncs {
       
           });
     }
+    */
 }
 

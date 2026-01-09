@@ -40,11 +40,11 @@ int main(){
   std::vector<std::string> currentStringified;
   ProcessingFuncs::StringifyContent(currentContent, currentStringified);
 
-  int selected = 0;
+  int selected = 1;
   auto menu_option = ftxui::MenuOption();
   std::string exception = "";
 
-  menu_option.on_enter = [&]{ProcessingFuncs::OnSelectedMenuOption(currentContent, currentStringified, currentPath, selected, exception);};
+  menu_option.on_enter = [&]{ProcessingFuncs::OnSelectedMenuOption(currentContent, currentStringified, currentPath, selected, exception); selected = 1;};
 
   ftxui::Component menu = ftxui::Menu(&currentStringified, &selected, menu_option);
 
