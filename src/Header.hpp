@@ -24,17 +24,17 @@ class ListItem{
     private:
         ItemTypes type;
         std::string name;
-        std::string lastOpened;
+        std::filesystem::file_time_type lastOpened;
     
     public:
-        ListItem(ItemTypes t, std::string n, std::string l);
+        ListItem(ItemTypes t, std::string n, std::filesystem::file_time_type l);
         ListItem(ItemTypes type, std::string name);
         void SetType(ItemTypes t);
         ItemTypes GetType();
         void SetName(std::string n);
         std::string GetName();
-        void SetLastOpened(std::string l);
-        std::string GetLastOpened();
+        void SetLastOpened(std::filesystem::file_time_type l);
+        std::filesystem::file_time_type GetLastOpened();
         std::string ToString();
 
 };
@@ -52,6 +52,7 @@ namespace ProcessingFuncs{
         int& selected,
         std::string& exception);
     std::string FsTimeToString(std::filesystem::file_time_type time);
+    std::time_t FsTimeToTimeT(std::filesystem::file_time_type time);
 }
 
 

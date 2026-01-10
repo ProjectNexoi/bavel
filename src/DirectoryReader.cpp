@@ -30,19 +30,17 @@ void PathToItemList(std::string path, std::vector<ListItem*>& currentContent){
   ListItem* item = new ListItem(
       ItemTypes::BACK, 
       "..", 
-      ""
+      fs::file_time_type::min()
     );
   currentContent.push_back(item);
   for (const auto & entry : fs::directory_iterator(path)){
     ItemTypes tempType = entry.is_directory() ? ItemTypes::DIR : ItemTypes::FIL;
     //try to find time of last write
-    std::string lwt = "";
+    fs::file_time_type lwt = fs::file_time_type::min();
     try{
-      lwt = ProcessingFuncs::FsTimeToString(entry.last_write_time());
+      lwt = entry.last_write_time();
     }
-    catch(fs::filesystem_error error){
-      lwt = "N/A                     "; //buncha spaces so it lines up nicely with the rest of the files...
-    }
+    catch(fs::filesystem_error error){}
     ListItem* item = new ListItem(
       tempType, 
       std::string(entry.path()), 
@@ -61,7 +59,13 @@ void SortItemList(std::vector<ListItem*>& currentContent, SortTypes sortType){
                 return item->GetName();
             case SortTypes::TIME_ASC:
             case SortTypes::TIME_DESC:
-                return item->GetLastOpened();
+              try{
+                return std::to_string(ProcessingFuncs::FsTimeToTimeT(item->GetLastOpened()));
+              }
+              catch(fs::filesystem_error &e){
+                return std::to_string(0);
+              }
+                
             default:
                 return item->GetName();
         }

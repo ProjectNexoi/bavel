@@ -4,7 +4,7 @@
 #include "Header.hpp"
 
 
-ListItem::ListItem(ItemTypes t, std::string n, std::string l){
+ListItem::ListItem(ItemTypes t, std::string n, std::filesystem::file_time_type l){
     this->type = t;
     this->name = n;
     this->lastOpened = l;
@@ -31,15 +31,20 @@ std::string ListItem::GetName(){
     return this->name;
 }
 
-void ListItem::SetLastOpened(std::string l){
+void ListItem::SetLastOpened(std::filesystem::file_time_type l){
     this->lastOpened = l;
 }
 
-std::string ListItem::GetLastOpened(){
+std::filesystem::file_time_type ListItem::GetLastOpened(){
     return this->lastOpened;
 }
 
 std::string ListItem::ToString(){
     std::string typeArr[3] = {"DIR", "FIL",""};
-    return typeArr[this->type] + "   " + this->lastOpened + "   " + this->name;
+    std::string time = "a";
+    try{  
+        time = (this->type == 2 ? "" : ProcessingFuncs::FsTimeToString(this->lastOpened));
+    }
+    catch(std::filesystem::filesystem_error &e){}
+    return typeArr[this->type] + "   " + time + "   " + this->name;
 }

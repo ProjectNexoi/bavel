@@ -6,7 +6,7 @@ namespace ProcessingFuncs {
     void StringifyContent(std::vector<ListItem*>& currentContent, std::vector<std::string>& currentStringified) {
         for(int i = 0; i < currentContent.size(); i++){
             currentStringified.push_back(currentContent[i]->ToString());
-            }
+        }
     }
 
     void OnSelectedMenuOption(
@@ -67,6 +67,17 @@ namespace ProcessingFuncs {
           timeStr.pop_back();
       }
       return timeStr;
+    }
+
+    std::time_t FsTimeToTimeT(fs::file_time_type time){
+      auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+        time - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
+      );
+
+      // Convert to time_t (C-style time)
+      std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
+
+      return cftime;
     }
 
     /*
