@@ -40,7 +40,7 @@ void PathToItemList(std::string path, std::vector<ListItem*>& currentContent){
     try{
       lwt = entry.last_write_time();
     }
-    catch(fs::filesystem_error error){}
+    catch(fs::filesystem_error error){ lwt = fs::file_time_type::min(); }
     ListItem* item = new ListItem(
       tempType, 
       std::string(entry.path()), 
@@ -59,13 +59,7 @@ void SortItemList(std::vector<ListItem*>& currentContent, SortTypes sortType){
                 return item->GetName();
             case SortTypes::TIME_ASC:
             case SortTypes::TIME_DESC:
-              try{
-                return std::to_string(ProcessingFuncs::FsTimeToTimeT(item->GetLastOpened()));
-              }
-              catch(fs::filesystem_error &e){
-                return std::to_string(0);
-              }
-                
+              return std::to_string(ProcessingFuncs::FsTimeToTimeT(item->GetLastOpened())); 
             default:
                 return item->GetName();
         }

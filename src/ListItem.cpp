@@ -41,10 +41,5 @@ std::filesystem::file_time_type ListItem::GetLastOpened(){
 
 std::string ListItem::ToString(){
     std::string typeArr[3] = {"DIR", "FIL",""};
-    std::string time = "a";
-    try{  
-        time = (this->type == 2 ? "" : ProcessingFuncs::FsTimeToString(this->lastOpened));
-    }
-    catch(std::filesystem::filesystem_error &e){}
-    return typeArr[this->type] + "   " + time + "   " + this->name;
+    return typeArr[this->type] + "   " + (this->type == 2 ? "" : ProcessingFuncs::FsTimeToString(this->lastOpened)) + "   " + this->name;
 }
