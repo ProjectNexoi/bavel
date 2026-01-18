@@ -1,0 +1,7 @@
+TODO:
+- File/Folder Previewing/Information
+- Quick Navigation
+- Navigation using Location Bar
+- Creating/Removing files/folders
+- Copy & Paste
+- File Editing using Vim/NVim
