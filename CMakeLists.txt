@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-set(ftxui_DIR ./ftxui/lib/cmake/ftxui)
+set(ftxui_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ftxui/lib/cmake/ftxui)
 
 project(TUIExplorer
   LANGUAGES CXX

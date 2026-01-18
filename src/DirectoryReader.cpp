@@ -1,6 +1,7 @@
 #include "Header.hpp"
 
 #include <iostream>
+#include <algorithm>
 #include <functional>
 #include <string>
 #include <vector>
@@ -51,31 +52,22 @@ void PathToItemList(std::string path, std::vector<ListItem*>& currentContent){
 }
 
 void SortItemList(std::vector<ListItem*>& currentContent, SortTypes sortType){
-    int n = currentContent.size();
-    auto getSortCriterion = [sortType](ListItem* item) {
+    std::sort(currentContent.begin(), currentContent.end(), [sortType](ListItem* a, ListItem* b) {
+        if (a->GetType() == ItemTypes::BACK && b->GetType() != ItemTypes::BACK) return true;
+        if (b->GetType() == ItemTypes::BACK && a->GetType() != ItemTypes::BACK) return false;
+        if (a->GetType() == ItemTypes::BACK && b->GetType() == ItemTypes::BACK) return false;
+
         switch(sortType) {
             case SortTypes::NAME_ASC:
+                return a->GetName() < b->GetName();
             case SortTypes::NAME_DESC:
-                return item->GetName();
+                return a->GetName() > b->GetName();
             case SortTypes::TIME_ASC:
+                return a->GetLastOpened() < b->GetLastOpened();
             case SortTypes::TIME_DESC:
-              return std::to_string(ProcessingFuncs::FsTimeToTimeT(item->GetLastOpened())); 
+                return a->GetLastOpened() > b->GetLastOpened();
             default:
-                return item->GetName();
+                return a->GetName() < b->GetName();
         }
-    };
-
-    bool swapped;
-    for (int i = 0; i < n - 1; i++) {
-        swapped = false;
-        for (int j = 0; j < n - i - 1; j++) {
-            if (getSortCriterion(currentContent[j]) > getSortCriterion(currentContent[j + 1])) {
-                std::swap(currentContent[j], currentContent[j + 1]);
-                swapped = true;
-            }
-        }
-      
-        if (!swapped)
-            break;
-    }
+    });
 }

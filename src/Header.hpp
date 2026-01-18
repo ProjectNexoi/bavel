@@ -40,7 +40,7 @@ class ListItem{
 };
 
 void PathToItemList(std::string path, std::vector<ListItem*>& currentContent);
-void SortItemList(std::vector<ListItem*>& currentContent, SortTypes sortType = SortTypes::NAME_ASC);
+void SortItemList(std::vector<ListItem*>& currentContent, SortTypes sortType);
 
 namespace ProcessingFuncs{
     void StringifyContent(std::vector<ListItem*>& currentContent, 
@@ -50,7 +50,12 @@ namespace ProcessingFuncs{
         std::vector<std::string>& currentStringified,
         std::string& currentPath,
         int& selected,
-        std::string& exception);
+        std::string& exception,
+        SortTypes& sortType);
+    void OnSelectedSortOption(
+        std::vector<ListItem*>& currentContent,
+        std::vector<std::string>& currentStringified,
+        SortTypes& sortType);
     std::string FsTimeToString(std::filesystem::file_time_type time);
     std::time_t FsTimeToTimeT(std::filesystem::file_time_type time);
 }

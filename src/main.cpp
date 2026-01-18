@@ -32,56 +32,113 @@ int main(){
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
   auto screen = ftxui::ScreenInteractive::FixedSize(size.ws_col,size.ws_row);
 
+  SortTypes sortType = SortTypes::NAME_ASC;
+
   //Fetches the current directory's content
   std::string currentPath = "/";
   std::vector<ListItem*> currentContent;
   PathToItemList(currentPath, currentContent);
+  SortItemList(currentContent, sortType);
 
   std::vector<std::string> currentStringified;
   ProcessingFuncs::StringifyContent(currentContent, currentStringified);
 
-  int selected = 1;
+  int selected = 0;
   auto menu_option = ftxui::MenuOption();
   std::string exception = "";
-
-  menu_option.on_enter = [&]{ProcessingFuncs::OnSelectedMenuOption(currentContent, currentStringified, currentPath, selected, exception); selected = 1;};
-
+  menu_option.on_enter = [&]{ProcessingFuncs::OnSelectedMenuOption(currentContent, currentStringified, currentPath, selected, exception, sortType); selected = 0;};
   ftxui::Component menu = ftxui::Menu(&currentStringified, &selected, menu_option);
 
-  auto renderer = ftxui::Renderer(menu, [&] {
-    
-    return ftxui::hbox({
+  int sortSelected = 0;
+  auto sort_menu_option = ftxui::MenuOption();
+  std::vector<std::string> sortOptions = {"Name Ascending", "Name Descending", "Last Modified Ascending", "Last Modified Descending"};
+  sort_menu_option.on_enter = [&]{sortType = SortTypes(sortSelected); ProcessingFuncs::OnSelectedSortOption(currentContent,currentStringified,sortType); selected = 0;};
+  ftxui::Component sort = ftxui::Menu(&sortOptions, &sortSelected, sort_menu_option);
 
-      ftxui::window(ftxui::text("Quick Navigation"),
+  auto sortBox = ftxui::Renderer(sort , [&] {
+    return ftxui::window(ftxui::text("Sort"),
+          sort->Render() | ftxui::yframe
+        );
+  });
+
+  auto menuBox = ftxui::Renderer(menu , [&] {
+    return ftxui::window(ftxui::text("Content"),
+          menu->Render() | ftxui::yframe
+        ) | ftxui::flex;
+  });
+
+  auto quickNavBox = ftxui::Renderer([&] {
+    return ftxui::window(ftxui::text("Quick Navigation"),
         ftxui::vbox({
           ftxui::text("nav")
         })
 
-      ),
-      
-      ftxui::vbox(
-
-        ftxui::window(ftxui::text("Location"),
-          ftxui::text(currentPath) | ftxui::bold
-        ),
-
-        ftxui::window(ftxui::text("Content"),
-          menu->Render() | ftxui::yframe
-        ) | ftxui::flex,
-
-        ftxui::window(ftxui::text("Exception"),
-          ftxui::text(exception) | ftxui::bold
-        )
-
-      ) | ftxui::flex,
-
-      ftxui::window(ftxui::text("Item Preview"),
-        ftxui::text("item preview placeholder")
-      ) | ftxui::flex,
-
+      ) | ftxui::flex;
     });
-    
+
+  auto locationBox = ftxui::Renderer([&] {
+    return ftxui::window(ftxui::text("Location"),
+      ftxui::text(currentPath) | ftxui::bold
+    );
   });
-  
-  screen.Loop(renderer);
+
+  auto previewBox = ftxui::Renderer([&] {
+    return ftxui::window(ftxui::text("Item Preview"),
+      ftxui::text("item preview placeholder")
+    ) | ftxui::flex;
+  });
+
+  auto exceptionBox = ftxui::Renderer([&] {
+    return ftxui::window(ftxui::text("Exception"),
+      ftxui::text(exception) | ftxui::bold
+    );
+  });
+
+  auto leftPane = ftxui::Container::Vertical({
+    quickNavBox
+  });
+
+  auto middlePane = ftxui::Container::Vertical({
+    locationBox,
+    sortBox,
+    menuBox,
+    exceptionBox
+  }) | ftxui::flex;
+
+  auto rightPane = ftxui::Container::Vertical({
+    previewBox
+  }) | ftxui::flex;
+
+  int selectedChild = 0;
+  auto compositionFinal = ftxui::Container::Horizontal({
+    leftPane, 
+    middlePane, 
+    rightPane}, 
+    &selectedChild);
+
+  auto layout = ftxui::CatchEvent(compositionFinal, [&](ftxui::Event event) {
+        if (event == ftxui::Event::Tab) {
+            if(selectedChild == 0){
+                selectedChild = 1;
+                return true;
+            }
+             if(selectedChild == 1){
+                selectedChild = 0;
+                return true;
+            }
+        }
+        if (event == ftxui::Event::TabReverse) {
+            if(selectedChild == 0){
+                selectedChild = 1;
+                return true;
+            }
+             if(selectedChild == 1){
+                selectedChild = 0;
+                return true;
+            }
+        }
+        return false;
+    });
+
+  screen.Loop(layout);
 }

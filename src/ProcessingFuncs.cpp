@@ -14,7 +14,8 @@ namespace ProcessingFuncs {
         std::vector<std::string>& currentStringified,
         std::string& currentPath,
         int& selected,
-        std::string& exception) {
+        std::string& exception,
+        SortTypes& sortType) {
         try{
             exception = "";
             std::string pathDestination;
@@ -24,7 +25,7 @@ namespace ProcessingFuncs {
                 pathDestination = "/";
               }
               PathToItemList(pathDestination, currentContent);
-              SortItemList(currentContent);
+              SortItemList(currentContent, sortType);
               currentPath = pathDestination;
               currentStringified.clear();
               for(int i = 0; i < currentContent.size(); i++){
@@ -34,7 +35,7 @@ namespace ProcessingFuncs {
             else if(currentContent[selected]->GetType() == ItemTypes::DIR){
               pathDestination = currentContent[selected]->GetName();
               PathToItemList(pathDestination, currentContent);
-              SortItemList(currentContent);
+              SortItemList(currentContent, sortType);
               currentPath = pathDestination;
               currentStringified.clear();
               for(int i = 0; i < currentContent.size(); i++){
@@ -49,6 +50,14 @@ namespace ProcessingFuncs {
           catch(fs::filesystem_error &e){
             exception = e.what();
           }
+    }
+
+    void OnSelectedSortOption(std::vector<ListItem*>& currentContent, std::vector<std::string>& currentStringified, SortTypes& sortType){
+      SortItemList(currentContent, sortType);
+      currentStringified.clear();
+      for(int i = 0; i < currentContent.size(); i++){
+        currentStringified.push_back(currentContent[i]->ToString());
+      }
     }
 
     std::string FsTimeToString(fs::file_time_type time){
