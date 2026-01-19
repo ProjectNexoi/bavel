@@ -43,16 +43,17 @@ int main(){
   std::vector<std::string> currentStringified;
   ProcessingFuncs::StringifyContent(currentContent, currentStringified);
 
-  int selected = 0;
+  int selected = currentContent.size() > 1 ? 1 : 0;
   auto menu_option = ftxui::MenuOption();
   std::string exception = "";
-  menu_option.on_enter = [&]{ProcessingFuncs::OnSelectedMenuOption(currentContent, currentStringified, currentPath, selected, exception, sortType); selected = 0;};
+  menu_option.on_enter = [&]{ProcessingFuncs::OnSelectedMenuOption(currentContent, currentStringified, currentPath, selected, exception, sortType); selected = currentContent.size() > 1 ? 1 : 0;};
   ftxui::Component menu = ftxui::Menu(&currentStringified, &selected, menu_option);
 
   int sortSelected = 0;
-  auto sort_menu_option = ftxui::MenuOption();
+  auto sort_menu_option = ftxui::MenuOption::Toggle();
+  sort_menu_option.underline.enabled = true;
   std::vector<std::string> sortOptions = {"Name Ascending", "Name Descending", "Last Modified Ascending", "Last Modified Descending"};
-  sort_menu_option.on_enter = [&]{sortType = SortTypes(sortSelected); ProcessingFuncs::OnSelectedSortOption(currentContent,currentStringified,sortType); selected = 0;};
+  sort_menu_option.on_change = [&]{sortType = SortTypes(sortSelected); ProcessingFuncs::OnSelectedSortOption(currentContent,currentStringified,sortType); selected = currentContent.size() > 1 ? 1 : 0;};
   ftxui::Component sort = ftxui::Menu(&sortOptions, &sortSelected, sort_menu_option);
 
   auto sortBox = ftxui::Renderer(sort , [&] {

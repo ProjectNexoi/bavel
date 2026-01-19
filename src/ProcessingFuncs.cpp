@@ -4,6 +4,7 @@ namespace fs = std::filesystem;
 
 namespace ProcessingFuncs {
     void StringifyContent(std::vector<ListItem*>& currentContent, std::vector<std::string>& currentStringified) {
+      currentStringified.clear();
         for(int i = 0; i < currentContent.size(); i++){
             currentStringified.push_back(currentContent[i]->ToString());
         }
@@ -21,26 +22,21 @@ namespace ProcessingFuncs {
             std::string pathDestination;
             if(currentContent[selected]->GetType() == ItemTypes::BACK){
               pathDestination = currentPath.substr(0, currentPath.find_last_of("/"));
+              //clamps pathDestination to root
               if(pathDestination == ""){
                 pathDestination = "/";
               }
               PathToItemList(pathDestination, currentContent);
               SortItemList(currentContent, sortType);
               currentPath = pathDestination;
-              currentStringified.clear();
-              for(int i = 0; i < currentContent.size(); i++){
-                currentStringified.push_back(currentContent[i]->ToString());
-              }
+              StringifyContent(currentContent, currentStringified);
             } 
             else if(currentContent[selected]->GetType() == ItemTypes::DIR){
               pathDestination = currentContent[selected]->GetName();
               PathToItemList(pathDestination, currentContent);
               SortItemList(currentContent, sortType);
               currentPath = pathDestination;
-              currentStringified.clear();
-              for(int i = 0; i < currentContent.size(); i++){
-                currentStringified.push_back(currentContent[i]->ToString());
-              }
+              StringifyContent(currentContent, currentStringified);
               selected = 0;
             } 
             else if(currentContent[selected]->GetType() == ItemTypes::FIL){
@@ -54,12 +50,11 @@ namespace ProcessingFuncs {
 
     void OnSelectedSortOption(std::vector<ListItem*>& currentContent, std::vector<std::string>& currentStringified, SortTypes& sortType){
       SortItemList(currentContent, sortType);
-      currentStringified.clear();
-      for(int i = 0; i < currentContent.size(); i++){
-        currentStringified.push_back(currentContent[i]->ToString());
-      }
+      StringifyContent(currentContent, currentStringified);
     }
 
+
+    //Horrible, horrible, horrible.
     std::string FsTimeToString(fs::file_time_type time){
       auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
         time - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
