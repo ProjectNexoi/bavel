@@ -29,6 +29,7 @@ namespace ProcessingFuncs {
               SortItemList(context);
               context.currentPath = pathDestination;
               StringifyContent(context);
+              selected = 0;
             } 
             else if(context.currentContent[selected]->GetType() == ItemTypes::DIR){
               pathDestination = context.currentContent[selected]->GetName();
@@ -36,7 +37,7 @@ namespace ProcessingFuncs {
               SortItemList(context);
               context.currentPath = pathDestination;
               StringifyContent(context);
-              selected = 0;
+              selected = context.currentContent.size() > 1 ? 1 : 0;
             } 
             else if(context.currentContent[selected]->GetType() == ItemTypes::FIL){
               std::system(("xdg-open '" + context.currentContent[selected]->GetName() + "'").c_str() );

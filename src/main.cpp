@@ -97,7 +97,7 @@ int main(){
 
   int selected = context.currentContent.size() > 1 ? 1 : 0;
   auto menu_option = ftxui::MenuOption();
-  menu_option.on_enter = [&]{ProcessingFuncs::OnSelectedMenuOption(context, selected); selected = context.currentContent.size() > 1 ? 1 : 0;};
+  menu_option.on_enter = [&]{ProcessingFuncs::OnSelectedMenuOption(context, selected);};
   ftxui::Component menu = ftxui::Menu(&context.currentStringified, &selected, menu_option);
 
   int sortSelected = 0;
