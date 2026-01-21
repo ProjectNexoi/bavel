@@ -43,15 +43,17 @@ namespace ElementLogic {
 
     void OnSelectedSortOption(Context& context){
       SortItemList(context);
+      context.data["sortType"] = context.sortType;
+      std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
       ProcessingFuncs::StringifyContent(context);
     }
 
-    void OnSelectedQNavButton(Context& context, std::string pathDestination){
+    void OnSelectedQNavButton(Context& context, int qNavSelected){
       try{
         context.exception = "";
-        PathToItemList(pathDestination, context);
+        PathToItemList(context.qNavPaths[qNavSelected], context);
         SortItemList(context);
-        context.currentPath = pathDestination;
+        context.currentPath = context.qNavPaths[qNavSelected];
         ProcessingFuncs::StringifyContent(context);
       }
       catch(fs::filesystem_error &e){

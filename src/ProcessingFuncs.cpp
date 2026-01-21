@@ -12,6 +12,21 @@ namespace ProcessingFuncs {
             context.currentStringified.push_back(context.currentContent[i]->ToString());
         }
     }
+
+    void ParseQNavPathsToEntries(Context& context) {
+      context.qNavEntries.clear();
+      for(int i = 0; i < context.qNavPaths.size(); i++){
+        std::string path = context.qNavPaths[i];
+        if(path.rfind(context.homedir, 0) == 0){
+          path.erase(0, context.homedir.length());
+          path = "~" + path;
+        }
+        if(path.length() > 32){
+          path = path.substr(0, 14) + " ... " + path.substr(path.length() - 13, path.length());
+        }
+        context.qNavEntries.push_back(path);
+      }
+    }
     
     //Horrible, horrible, horrible.
     std::string FsTimeToString(fs::file_time_type time){

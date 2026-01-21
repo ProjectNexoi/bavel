@@ -53,7 +53,8 @@ int main(){
     std::ifstream(std::string(context.homedir) + "/.bavel/data.json") >> context.data;
   }
 
-  context.sortType = SortTypes::NAME_ASC;
+  try{context.sortType = SortTypes(context.data["sortType"].get<int>());}catch(std::exception& e){context.sortType = SortTypes::NAME_ASC;}
+
   
   //Fetches the current directory's content
   context.currentPath = "/";
@@ -64,14 +65,15 @@ int main(){
   std::string exception = "";
 
   //QuickNav entries
-  std::vector<std::string> qNavPaths = {};
-  try{qNavPaths = context.data["qNavEntries"].get<std::vector<std::string>>();}
+  context.qNavPaths = {};
+  try{context.qNavPaths = context.data["qNavEntries"].get<std::vector<std::string>>();}
   catch(std::exception& e){
     exception = e.what();
   }
+  ProcessingFuncs::ParseQNavPathsToEntries(context);
   int qNavSelected = 0;
   auto qNavMenuOption = ftxui::MenuOption(ftxui::MenuOption::Vertical());
-  qNavMenuOption.elements_prefix = []{ return ftxui::text(""); };
+  qNavMenuOption.elements_prefix = []{ return ftxui::text("                                  "); }; // So that the leftpane doesn't change widths whenever a user adds/deletes a quicknav entry 
   qNavMenuOption.entries_option.transform = [](const ftxui::EntryState& state) {
     auto element = ftxui::text(" " + state.label + " ");
     if (state.focused) {
@@ -82,24 +84,26 @@ int main(){
     }
     return element | ftxui::flex;
   };
-  qNavMenuOption.on_enter = [&]{ElementLogic::OnSelectedQNavButton(context, qNavPaths[qNavSelected]);};
-  ftxui::Component qNavMenu = ftxui::Menu(&qNavPaths, &qNavSelected, qNavMenuOption);
+  qNavMenuOption.on_enter = [&]{ElementLogic::OnSelectedQNavButton(context, qNavSelected); ProcessingFuncs::ParseQNavPathsToEntries(context);};
+  ftxui::Component qNavMenu = ftxui::Menu(&context.qNavEntries, &qNavSelected, qNavMenuOption);
 
 
   //QuickNav add new entry button
   ftxui::Component qNavAddButton = ftxui::Button("Add Current Path", [&]{
-      qNavPaths.push_back(context.currentPath);
-      context.data["qNavEntries"] = qNavPaths;
+      context.qNavPaths.push_back(context.currentPath);
+      context.data["qNavEntries"] = context.qNavPaths;
       std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
+      ProcessingFuncs::ParseQNavPathsToEntries(context);
     });
 
-
+  // Initialize file menu
   int selected = context.currentContent.size() > 1 ? 1 : 0;
   auto menu_option = ftxui::MenuOption();
   menu_option.on_enter = [&]{ElementLogic::OnSelectedMenuOption(context, selected);};
   ftxui::Component menu = ftxui::Menu(&context.currentStringified, &selected, menu_option);
 
-  int sortSelected = 0;
+  // Initialize sort menu
+  int sortSelected = context.sortType;
   auto sort_menu_option = ftxui::MenuOption::Toggle();
   sort_menu_option.entries_option.transform = [](const ftxui::EntryState& state) {
     auto element = ftxui::text(state.label);
@@ -247,9 +251,10 @@ int main(){
             }
         }
         if(event == ftxui::Event::Delete && selectedFinalChild == 0 && selectedLeftChild == 0){
-            qNavPaths.erase(qNavPaths.begin() + qNavSelected);
-            context.data["qNavEntries"] = qNavPaths;
+            context.qNavPaths.erase(context.qNavPaths.begin() + qNavSelected);
+            context.data["qNavEntries"] = context.qNavPaths;
             std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
+            ProcessingFuncs::ParseQNavPathsToEntries(context);
             return true;
         }
         return false;

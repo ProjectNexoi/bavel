@@ -50,6 +50,7 @@ struct Context{
   std::vector<std::string> currentStringified;
   std::string exception;
   std::vector<std::string> qNavPaths;
+  std::vector<std::string> qNavEntries;
 } ;
 
 void PathToItemList(std::string path, Context& context);
@@ -57,6 +58,7 @@ void SortItemList(Context& context);
 
 namespace ProcessingFuncs{
     void StringifyContent(Context& context);
+    void ParseQNavPathsToEntries(Context& context);
     std::string FsTimeToString(std::filesystem::file_time_type time);
     std::time_t FsTimeToTimeT(std::filesystem::file_time_type time);
 }
@@ -64,7 +66,7 @@ namespace ProcessingFuncs{
 namespace ElementLogic{
     void OnSelectedMenuOption(Context& context, int& selected);
     void OnSelectedSortOption(Context& context);
-    void OnSelectedQNavButton(Context& context, std::string pathDestination);
+    void OnSelectedQNavButton(Context& context, int qNavSelected);
     void OnSelectedQNavAddButton(Context& context);
 }
 #endif 
