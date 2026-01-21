@@ -62,14 +62,11 @@ int main(){
   SortItemList(context);
 
   ProcessingFuncs::StringifyContent(context);
-  std::string exception = "";
 
   //QuickNav entries
   context.qNavPaths = {};
   try{context.qNavPaths = context.data["qNavEntries"].get<std::vector<std::string>>();}
-  catch(std::exception& e){
-    exception = e.what();
-  }
+  catch(std::exception& e){context.exception = e.what();}
   ProcessingFuncs::ParseQNavPathsToEntries(context);
   int qNavSelected = 0;
   auto qNavMenuOption = ftxui::MenuOption(ftxui::MenuOption::Vertical());
@@ -171,7 +168,7 @@ int main(){
 
   auto exceptionBox = ftxui::Renderer([&] {
     return ftxui::window(ftxui::text("Exception"),
-      ftxui::text(exception) | ftxui::bold
+      ftxui::text(context.exception) | ftxui::bold
     );
   });
 
@@ -255,6 +252,12 @@ int main(){
             context.data["qNavEntries"] = context.qNavPaths;
             std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
             ProcessingFuncs::ParseQNavPathsToEntries(context);
+            return true;
+        }
+        if(event == ftxui::Event::Character("e") && selectedFinalChild == 1 && selectedMiddleChild == 2){
+            screen.WithRestoredIO([&] {
+                std::system(("vim '" + context.currentContent[selected]->GetName() + "'").c_str() );
+            })();
             return true;
         }
         return false;

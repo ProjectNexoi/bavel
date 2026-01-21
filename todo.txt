@@ -3,8 +3,8 @@ TODO:
 - Navigation using Location Bar
 - Creating/Removing files/folders
 - Copy & Paste
-- File Editing using Vim/NVim
 - Search Functionality
 
 DONE:
 - Quick Navigation
+- File Editing using Vim/NVim
