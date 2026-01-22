@@ -25,16 +25,19 @@ enum SortTypes{
 class ListItem{
     private:
         ItemTypes type;
-        std::string name;
+        std::string path;
+        std::string fileName;
         std::filesystem::file_time_type lastOpened;
     
     public:
-        ListItem(ItemTypes t, std::string n, std::filesystem::file_time_type l);
-        ListItem(ItemTypes type, std::string name);
+        ListItem(ItemTypes t, std::string p, std::filesystem::file_time_type l);
+        ListItem(ItemTypes type, std::string path);
         void SetType(ItemTypes t);
         ItemTypes GetType();
-        void SetName(std::string n);
-        std::string GetName();
+        void SetPath(std::string p);
+        std::string GetPath();
+        void SetFileName(std::string fn);
+        std::string GetFileName();
         void SetLastOpened(std::filesystem::file_time_type l);
         std::filesystem::file_time_type GetLastOpened();
         std::string ToString();
@@ -51,7 +54,8 @@ struct Context{
   std::string exception;
   std::vector<std::string> qNavPaths;
   std::vector<std::string> qNavEntries;
-  bool newElementUIActive;
+  int activeModalIndex;
+  bool anyModalActive;
 };
 
 void PathToItemList(std::string path, Context& context);
@@ -72,5 +76,6 @@ namespace ElementLogic{
     void OnSelectedQNavAddButton(Context& context);
     void OnSelectedNewFileButton(Context& context, std::string name);
     void OnSelectedNewDirectoryButton(Context& context, std::string name);
+    void OnSelectedDeleteElementButton(Context& context, int& selected);
 }
 #endif 

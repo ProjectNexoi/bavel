@@ -25,7 +25,7 @@ namespace ElementLogic {
               selected = 0;
             } 
             else if(context.currentContent[selected]->GetType() == ItemTypes::DIR){
-              pathDestination = context.currentContent[selected]->GetName();
+              pathDestination = context.currentContent[selected]->GetPath();
               PathToItemList(pathDestination, context);
               SortItemList(context);
               context.currentPath = pathDestination;
@@ -33,7 +33,7 @@ namespace ElementLogic {
               selected = context.currentContent.size() > 1 ? 1 : 0;
             } 
             else if(context.currentContent[selected]->GetType() == ItemTypes::FIL){
-              std::system(("xdg-open '" + context.currentContent[selected]->GetName() + "'").c_str() );
+              std::system(("xdg-open '" + context.currentContent[selected]->GetPath() + "'").c_str() );
             }
           }
           catch(fs::filesystem_error &e){
@@ -88,7 +88,7 @@ namespace ElementLogic {
       try{
         fs::create_directory(context.currentPath + "/" + name);
         ProcessingFuncs::ReloadItemList(context);
-        context.newElementUIActive = false;
+        context.anyModalActive = false;
       }
       catch(fs::filesystem_error &e){
         context.exception = e.what();
@@ -103,10 +103,32 @@ namespace ElementLogic {
         std::ofstream ofs(context.currentPath + "/" + name);
         ofs.close();
         ProcessingFuncs::ReloadItemList(context);
-        context.newElementUIActive = false;
+        context.anyModalActive = false;
       }
       catch(fs::filesystem_error &e){
         context.exception = e.what();
+      }
+    }
+    void OnSelectedDeleteElementButton(Context& context, int& selected){
+      if(context.currentContent[selected]->GetType() == ItemTypes::DIR){
+        try{
+          fs::remove_all(context.currentContent[selected]->GetPath());
+          ProcessingFuncs::ReloadItemList(context);
+          context.anyModalActive = false;
+        }
+        catch(fs::filesystem_error &e){
+          context.exception = e.what();
+        }
+      }
+      else if(context.currentContent[selected]->GetType() == ItemTypes::FIL){
+        try{
+          fs::remove(context.currentContent[selected]->GetPath());
+          ProcessingFuncs::ReloadItemList(context);
+          context.anyModalActive = false;
+        }
+        catch(fs::filesystem_error &e){
+          context.exception = e.what();
+        }
       }
     }
 }

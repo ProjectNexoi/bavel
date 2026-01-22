@@ -1,12 +1,12 @@
 file menu:
-    [Enter] - open file/folder (implemented)
-    [Delete] - delete file/folder
-    [e] - edit file using vim/nvim (implemented)
-    [r] - rename file/folder
-    [y] - yank (copy) file/folder
-    [p] - paste file/folder
-    [d] - delete file/folder
-    [c] - create new file/folder (implemented)
+    [Enter] - Open file/folder (implemented)
+    [Delete] - Delete file/folder
+    [e] - Edit file using vim/nvim (implemented)
+    [r] - Rename file/folder
+    [y] - Yank (copy) file/folder
+    [p] - Paste file/folder
+    [d] - Delete file/folder (implemented)
+    [c] - Create new file/folder (implemented) 
 
 
 quicknav menu:

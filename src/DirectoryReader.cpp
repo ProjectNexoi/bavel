@@ -59,15 +59,15 @@ void SortItemList(Context& context){
 
         switch(context.sortType) {
             case SortTypes::NAME_ASC:
-                return a->GetName() < b->GetName();
+                return a->GetPath() < b->GetPath();
             case SortTypes::NAME_DESC:
-                return a->GetName() > b->GetName();
+                return a->GetPath() > b->GetPath();
             case SortTypes::TIME_ASC:
                 return a->GetLastOpened() < b->GetLastOpened();
             case SortTypes::TIME_DESC:
                 return a->GetLastOpened() > b->GetLastOpened();
             default:
-                return a->GetName() < b->GetName();
+                return a->GetPath() < b->GetPath();
         }
     });
 }

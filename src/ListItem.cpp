@@ -4,15 +4,17 @@
 #include "Header.hpp"
 
 
-ListItem::ListItem(ItemTypes t, std::string n, std::filesystem::file_time_type l){
+ListItem::ListItem(ItemTypes t, std::string p, std::filesystem::file_time_type l){
     this->type = t;
-    this->name = n;
+    this->path = p;
+    this->fileName = p.substr(p.find_last_of("/")+1);
     this->lastOpened = l;
 }
 
-ListItem::ListItem(ItemTypes type, std::string name){
+ListItem::ListItem(ItemTypes type, std::string path){
     this->type = type;
-    this->name = name;
+    this->path = path;
+    this->fileName = path.substr(path.find_last_of("/")+1);
 }
 
 void ListItem::SetType(ItemTypes t){
@@ -23,12 +25,21 @@ ItemTypes ListItem::GetType(){
     return this->type;
 }
 
-void ListItem::SetName(std::string n){
-    this->name = n;
+void ListItem::SetPath(std::string p){
+    this->path = p;
+    this->fileName = p.substr(p.find_last_of("/")+1);
 }
 
-std::string ListItem::GetName(){
-    return this->name;
+std::string ListItem::GetPath(){
+    return this->path;
+}
+
+std::string ListItem::GetFileName(){
+    return this->fileName;
+}
+
+void ListItem::SetFileName(std::string fn){
+    this->fileName = fn;
 }
 
 void ListItem::SetLastOpened(std::filesystem::file_time_type l){
@@ -41,5 +52,9 @@ std::filesystem::file_time_type ListItem::GetLastOpened(){
 
 std::string ListItem::ToString(){
     std::string typeArr[3] = {"DIR", "FIL",""};
-    return typeArr[this->type] + "   " + (this->type == 2 ? "" : ProcessingFuncs::FsTimeToString(this->lastOpened)) + "   " + this->name;
+    return typeArr[this->type] 
+    + "   "
+    + (this->type == 2 ? "" : ProcessingFuncs::FsTimeToString(this->lastOpened)) 
+    + "   " 
+    + this->fileName;
 }

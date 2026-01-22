@@ -1,7 +1,6 @@
 TODO:
 - File/Folder Previewing/Information
 - Navigation using Location Bar
-- Creating/Removing files/folders
 - Copy & Paste
 - Search Functionality
 - Renaming files/folders
@@ -9,3 +8,4 @@ TODO:
 DONE:
 - Quick Navigation
 - File Editing using Vim/NVim
+- Creating/Removing files/folders
