@@ -72,10 +72,11 @@ namespace ProcessingFuncs{
 namespace ElementLogic{
     void OnSelectedMenuOption(Context& context, int& selected);
     void OnSelectedSortOption(Context& context);
-    void OnSelectedQNavButton(Context& context, int qNavSelected);
+    void OnSelectedQNavButton(Context& context, int& qNavSelected);
     void OnSelectedQNavAddButton(Context& context);
     void OnSelectedNewFileButton(Context& context, std::string name);
     void OnSelectedNewDirectoryButton(Context& context, std::string name);
     void OnSelectedDeleteElementButton(Context& context, int& selected);
+    void OnSelectedRenameElementButton(Context& context, int& selected, std::string& newName);
 }
 #endif 

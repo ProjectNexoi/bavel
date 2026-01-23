@@ -111,7 +111,7 @@ int main(){
     if (state.active) {
       element |= ftxui::bold;
     }
-    return element | ftxui::center | ftxui::flex;
+    return element | ftxui::flex | ftxui::center;
   };
   std::vector<std::string> sortOptions = {"Name Ascending", "Name Descending", "Last Modified Ascending", "Last Modified Descending"};
   sort_menu_option.on_change = [&]{context.sortType = SortTypes(sortSelected); ElementLogic::OnSelectedSortOption(context);};
@@ -121,43 +121,50 @@ int main(){
   // GUI starts here
   context.anyModalActive = false;
   context.activeModalIndex = 0;
-  std::string newElementName = "";
-  auto newElementNameInput = ftxui::Input(&newElementName) | ftxui::border;
   
   auto centered_button_option = ftxui::ButtonOption::Border();
   centered_button_option.transform = [](const ftxui::EntryState& state) {
     auto element = ftxui::text(state.label) | ftxui::center;
+    element |= ftxui::size(ftxui::WIDTH, ftxui::GREATER_THAN, 20);
     element |= ftxui::border;
     if (state.focused) {
       element |= ftxui::inverted;
     }
-    return element;
+    return element | ftxui::xflex;
   };
-  ftxui::Component newFileButton = ftxui::Button("File", [&]{ElementLogic::OnSelectedNewFileButton(context, newElementName); newElementName = "";}, centered_button_option) | ftxui::flex;
-  ftxui::Component newDirectoryButton = ftxui::Button("Directory", [&]{ElementLogic::OnSelectedNewDirectoryButton(context, newElementName); newElementName = "";}, centered_button_option) | ftxui::flex;
-  ftxui::Component newElementCancelButton = ftxui::Button("Cancel", [&]{context.anyModalActive = false; newElementName = "";}, centered_button_option) | ftxui::flex;
 
-  int newElementSelected = 2;
+  // New File/Dir Logic & GUI
+  std::string newElementName = "";
+  auto newElementNameInput = ftxui::Input(&newElementName, ftxui::InputOption{.placeholder = " Enter Name"}) | ftxui::border;
+  ftxui::Component newFileButton = ftxui::Button("File", [&]{ElementLogic::OnSelectedNewFileButton(context, newElementName); newElementName = "";}, centered_button_option);
+  ftxui::Component newDirectoryButton = ftxui::Button("Directory", [&]{ElementLogic::OnSelectedNewDirectoryButton(context, newElementName); newElementName = "";}, centered_button_option);
+  ftxui::Component newElementCancelButton = ftxui::Button("Cancel", [&]{context.anyModalActive = false; newElementName = "";}, centered_button_option);
+
+  int newElementSelected = 4;
   auto newElementContent = ftxui::Container::Vertical({
     ftxui::Renderer([] { return ftxui::text("Create New") | ftxui::center | ftxui::bold; }),
-    ftxui::Renderer([] {return ftxui::filler();}),
+    ftxui::Renderer([] {return ftxui::text("");}),
+    ftxui::Renderer([] {return ftxui::text("This action will create a new element in the current directory named:") | ftxui::center;}),
+    ftxui::Renderer([] {return ftxui::text("");}),
     newElementNameInput,
     ftxui::Renderer([] {return ftxui::filler();}),
+    ftxui::Renderer([&] {return ftxui::text("Of type:") | ftxui::center;}),
     ftxui::Container::Horizontal({
       newFileButton,
-      newDirectoryButton,
-      newElementCancelButton})
+      newDirectoryButton}),
+    newElementCancelButton
     }, &newElementSelected) | ftxui::flex;
 
   auto newElementUI = ftxui::Renderer(newElementContent, [&] {
     return ftxui::window(ftxui::text(""),
       newElementContent->Render()
-    ) | ftxui::size(ftxui::WidthOrHeight::HEIGHT, ftxui::Constraint::EQUAL, 10)
-      | ftxui::size(ftxui::WidthOrHeight::WIDTH, ftxui::Constraint::EQUAL, 60)
+    ) | ftxui::size(ftxui::WidthOrHeight::HEIGHT, ftxui::Constraint::EQUAL, 16)
+      | ftxui::size(ftxui::WidthOrHeight::WIDTH, ftxui::Constraint::EQUAL, 75)
       | ftxui::center
       | ftxui::clear_under;
   });
 
+  // Delete Element Logic & GUI
   ftxui::Component deleteElementButton = ftxui::Button("Delete", [&]{ElementLogic::OnSelectedDeleteElementButton(context, selected);}, centered_button_option);
   ftxui::Component deleteElementCancelButton = ftxui::Button("Cancel", [&]{context.anyModalActive = false;}, centered_button_option);
   int deleteElementSelected = 7;
@@ -165,14 +172,21 @@ int main(){
   auto deleteElementContent = ftxui::Container::Vertical({
     ftxui::Renderer([] {return ftxui::text("Element Deletion") | ftxui::center | ftxui::bold; }),
     ftxui::Renderer([] {return ftxui::text("");}),
-    ftxui::Renderer([] {return ftxui::hbox(ftxui::text("This action will delete the following and "), ftxui::text("cannot be undone:") | ftxui::underlined) | ftxui::center;}),
+    ftxui::Renderer([] {return ftxui::hbox(
+      ftxui::text("This action will delete the following and "), 
+      ftxui::text("cannot be undone") | ftxui::underlinedDouble,
+      ftxui::text(":")
+      ) | ftxui::center;}),
     ftxui::Renderer([] {return ftxui::text("");}),
     ftxui::Renderer([&] {return ftxui::text(context.currentContent[selected]->GetFileName()) | ftxui::center | ftxui::bold;}),
-    ftxui::Renderer([&] {return ftxui::hbox( ftxui::text("of type "), ftxui::text(typeDeleteArr[context.currentContent[selected]->GetType()])| ftxui::bold | ftxui::color(ftxui::Color::Red)) | ftxui::center;}),
+    ftxui::Renderer([&] {return ftxui::hbox(
+      ftxui::text("of type "), 
+      ftxui::text(typeDeleteArr[context.currentContent[selected]->GetType()])| ftxui::bold | 
+      ftxui::color(ftxui::Color::Red)) | ftxui::center;}),
     ftxui::Renderer([] {return ftxui::filler();}),
     deleteElementCancelButton,
     deleteElementButton
-    }, &deleteElementSelected) | ftxui::flex;
+  }, &deleteElementSelected) | ftxui::flex;
   
 
   auto deleteElementUI = ftxui::Renderer(deleteElementContent, [&] {
@@ -184,6 +198,35 @@ int main(){
       | ftxui::clear_under;
   });
 
+  // Rename Element Logic & GUI
+  int renameElementSelected = 7;
+  std::string renameNewName = "";
+  auto renameElementNameInput = ftxui::Input(&renameNewName, ftxui::InputOption{.placeholder = " Enter New Name"}) | ftxui::border;
+  ftxui::Component renameElementButton = ftxui::Button("Rename", [&]{ElementLogic::OnSelectedRenameElementButton(context, selected, renameNewName); renameNewName = "";}, centered_button_option);
+  ftxui::Component renameElementCancelButton = ftxui::Button("Cancel", [&]{context.anyModalActive = false; renameNewName = "";}, centered_button_option);
+
+  auto renameElementContent = ftxui::Container::Vertical({
+    ftxui::Renderer([] {return ftxui::text("Rename Element") | ftxui::center | ftxui::bold; }),
+    ftxui::Renderer([] {return ftxui::text("");}),
+    ftxui::Renderer([] {return ftxui::hbox( ftxui::text("This element will be renamed from: ")) | ftxui::center;}),
+    ftxui::Renderer([] {return ftxui::text("");}),
+    ftxui::Renderer([&] {return ftxui::text(context.currentContent[selected]->GetFileName()) | ftxui::center | ftxui::bold;}),
+    ftxui::Renderer([] {return ftxui::text("");}),
+    ftxui::Renderer([] {return ftxui::text("To:") |ftxui::center;}),
+    renameElementNameInput,
+    ftxui::Renderer([] {return ftxui::filler();}),
+    renameElementButton | ftxui::flex,
+    renameElementCancelButton | ftxui::flex
+  }, &renameElementSelected) | ftxui::flex;
+
+  auto renameElementUI = ftxui::Renderer(renameElementContent, [&] {
+    return ftxui::window(ftxui::text(""),
+      renameElementContent->Render()
+    ) | ftxui::size(ftxui::WidthOrHeight::HEIGHT, ftxui::Constraint::EQUAL, 18)
+      | ftxui::size(ftxui::WidthOrHeight::WIDTH, ftxui::Constraint::EQUAL, 60)
+      | ftxui::center
+      | ftxui::clear_under;
+  });
 
   auto sortBox = ftxui::Renderer(sort , [&] {
     return ftxui::window(ftxui::text("Sort"),
@@ -198,7 +241,8 @@ int main(){
   });
 
   auto menuLayout = ftxui::CatchEvent(menuBox, [&](ftxui::Event event) {
-    if(event == ftxui::Event::Character("e")){
+    bool isNotBack = context.currentContent[selected]->GetType() != ItemTypes::BACK;
+    if(event == ftxui::Event::Character("e") && isNotBack){
       screen.WithRestoredIO([&] {
           std::system(("vim '" + context.currentContent[selected]->GetPath() + "'").c_str() );
       })();
@@ -208,14 +252,21 @@ int main(){
       context.anyModalActive = true;
       context.activeModalIndex = 0;
       newElementUI->Focused();
-      newElementSelected = 2;
+      newElementSelected = 4;
       return true;
     }
-    if (event == ftxui::Event::Character("d")){
+    if (event == ftxui::Event::Character("d") && isNotBack){
       context.anyModalActive = true;
       context.activeModalIndex = 1;
       deleteElementUI->Focused();
       deleteElementSelected = 7;
+      return true;
+    }
+    if (event == ftxui::Event::Character("r") && isNotBack){
+      context.anyModalActive = true;
+      context.activeModalIndex = 2;
+      renameElementUI->Focused();
+      renameElementSelected = 7;
       return true;
     }
     return false;
@@ -364,7 +415,8 @@ int main(){
 
   auto modalContainer = ftxui::Container::Tab({
     newElementUI,
-    deleteElementUI
+    deleteElementUI,
+    renameElementUI
   }, &context.activeModalIndex);
 
   auto finalUI = ftxui::Modal(mainLayoutDimmable, modalContainer, &context.anyModalActive);

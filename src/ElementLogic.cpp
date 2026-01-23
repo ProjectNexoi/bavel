@@ -48,7 +48,7 @@ namespace ElementLogic {
       ProcessingFuncs::StringifyContent(context);
     }
 
-    void OnSelectedQNavButton(Context& context, int qNavSelected){
+    void OnSelectedQNavButton(Context& context, int& qNavSelected){
       try{
         context.exception = "";
         PathToItemList(context.qNavPaths[qNavSelected], context);
@@ -129,6 +129,20 @@ namespace ElementLogic {
         catch(fs::filesystem_error &e){
           context.exception = e.what();
         }
+      }
+    }
+
+    void OnSelectedRenameElementButton(Context& context, int& selected, std::string& newName){
+      if(newName == ""){
+        return;
+      }
+      try{
+        fs::rename(context.currentContent[selected]->GetPath(), context.currentPath + "/" + newName);
+        ProcessingFuncs::ReloadItemList(context);
+        context.anyModalActive = false;
+      }
+      catch(std::exception &e){
+        context.exception = e.what();
       }
     }
 }
