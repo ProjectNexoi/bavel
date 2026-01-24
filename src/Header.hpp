@@ -56,10 +56,12 @@ struct Context{
   std::vector<std::string> qNavEntries;
   int activeModalIndex;
   bool anyModalActive;
+  std::string locationBarText;
 };
 
 void PathToItemList(std::string path, Context& context);
 void SortItemList(Context& context);
+void NavigateToPath(Context& context, std::string path);
 
 namespace ProcessingFuncs{
     void StringifyContent(Context& context);
@@ -67,6 +69,7 @@ namespace ProcessingFuncs{
     std::string FsTimeToString(std::filesystem::file_time_type time);
     std::time_t FsTimeToTimeT(std::filesystem::file_time_type time);
     void ReloadItemList(Context& context);
+    void ParseCurrentPathToNavText(Context& context);
 }
 
 namespace ElementLogic{
@@ -78,5 +81,6 @@ namespace ElementLogic{
     void OnSelectedNewDirectoryButton(Context& context, std::string name);
     void OnSelectedDeleteElementButton(Context& context, int& selected);
     void OnSelectedRenameElementButton(Context& context, int& selected, std::string& newName);
+    void OnLocationBarSubmit(Context& context);
 }
 #endif 

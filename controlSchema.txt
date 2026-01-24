@@ -2,7 +2,7 @@ file menu:
     [Enter] - Open file/folder (implemented)
     [Delete] - Delete file/folder
     [e] - Edit file using vim/nvim (implemented)
-    [r] - Rename file/folder
+    [r] - Rename file/folder (implemented)
     [y] - Yank (copy) file/folder
     [p] - Paste file/folder
     [d] - Delete file/folder (implemented)

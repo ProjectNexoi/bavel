@@ -27,6 +27,14 @@ namespace ProcessingFuncs {
         context.qNavEntries.push_back(path);
       }
     }
+
+    void ParseCurrentPathToNavText(Context& context){
+      context.locationBarText = context.currentPath;
+      if(context.locationBarText.rfind(context.homedir, 0) == 0){
+        context.locationBarText.erase(0, context.homedir.length());
+        context.locationBarText = "~" + context.locationBarText;
+      }
+    }
     
     //Horrible, horrible, horrible.
     std::string FsTimeToString(fs::file_time_type time){

@@ -18,18 +18,12 @@ namespace ElementLogic {
               if(pathDestination == ""){
                 pathDestination = "/";
               }
-              PathToItemList(pathDestination, context);
-              SortItemList(context);
-              context.currentPath = pathDestination;
-              ProcessingFuncs::StringifyContent(context);
+              NavigateToPath(context, pathDestination);
               selected = 0;
             } 
             else if(context.currentContent[selected]->GetType() == ItemTypes::DIR){
               pathDestination = context.currentContent[selected]->GetPath();
-              PathToItemList(pathDestination, context);
-              SortItemList(context);
-              context.currentPath = pathDestination;
-              ProcessingFuncs::StringifyContent(context);
+              NavigateToPath(context,pathDestination);
               selected = context.currentContent.size() > 1 ? 1 : 0;
             } 
             else if(context.currentContent[selected]->GetType() == ItemTypes::FIL){
@@ -51,10 +45,7 @@ namespace ElementLogic {
     void OnSelectedQNavButton(Context& context, int& qNavSelected){
       try{
         context.exception = "";
-        PathToItemList(context.qNavPaths[qNavSelected], context);
-        SortItemList(context);
-        context.currentPath = context.qNavPaths[qNavSelected];
-        ProcessingFuncs::StringifyContent(context);
+        NavigateToPath(context, context.qNavPaths[qNavSelected]);
       }
       catch(fs::filesystem_error &e){
         context.exception = e.what();
@@ -142,6 +133,19 @@ namespace ElementLogic {
         context.anyModalActive = false;
       }
       catch(std::exception &e){
+        context.exception = e.what();
+      }
+    }
+
+    void OnLocationBarSubmit(Context& context){
+      try{
+        std::string path = context.locationBarText;
+        if(path[0] == '~'){
+          path = context.homedir + path.substr(1);
+        }
+        NavigateToPath(context, path);
+      }
+      catch(fs::filesystem_error &e){
         context.exception = e.what();
       }
     }

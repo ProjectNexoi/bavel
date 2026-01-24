@@ -71,3 +71,11 @@ void SortItemList(Context& context){
         }
     });
 }
+
+void NavigateToPath(Context& context, std::string path){
+  PathToItemList(path, context);
+  SortItemList(context);
+  context.currentPath = path;
+  ProcessingFuncs::StringifyContent(context);
+  ProcessingFuncs::ParseCurrentPathToNavText(context);
+}

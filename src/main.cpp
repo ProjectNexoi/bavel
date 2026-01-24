@@ -32,8 +32,21 @@ namespace fs = std::filesystem;
 #include "ftxui/component/loop.hpp"
 
 int main(){
-
+  //Initialize context
   Context context;
+  context.exception = "";
+  context.anyModalActive = false;
+  context.activeModalIndex = 0;
+  context.sortType = SortTypes::NAME_ASC;
+  context.qNavPaths = {};
+  context.qNavEntries = {};
+  context.currentStringified = {};
+  context.currentContent = {};
+  context.currentPath = "";
+  context.homedir = "";
+  context.data = {};
+  context.locationBarText = "";
+
 
   //Sets window to fill terminal
   struct winsize size;
@@ -53,18 +66,14 @@ int main(){
     std::ifstream(std::string(context.homedir) + "/.bavel/data.json") >> context.data;
   }
 
-  try{context.sortType = SortTypes(context.data["sortType"].get<int>());}catch(std::exception& e){context.sortType = SortTypes::NAME_ASC;}
+  try{context.sortType = SortTypes(context.data["sortType"].get<int>());}catch(std::exception& e){}
 
   
   //Fetches the current directory's content
   context.currentPath = context.homedir;
-  PathToItemList(context.currentPath, context);
-  SortItemList(context);
-
-  ProcessingFuncs::StringifyContent(context);
+  NavigateToPath(context, context.currentPath);
 
   //QuickNav entries
-  context.qNavPaths = {};
   try{context.qNavPaths = context.data["qNavEntries"].get<std::vector<std::string>>();}
   catch(std::exception& e){context.exception = e.what();}
   ProcessingFuncs::ParseQNavPathsToEntries(context);
@@ -92,7 +101,7 @@ int main(){
       context.data["qNavEntries"] = context.qNavPaths;
       std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
       ProcessingFuncs::ParseQNavPathsToEntries(context);
-    });
+  });
 
   // Initialize file menu
   int selected = context.currentContent.size() > 1 ? 1 : 0;
@@ -119,8 +128,6 @@ int main(){
 
 
   // GUI starts here
-  context.anyModalActive = false;
-  context.activeModalIndex = 0;
   
   auto centered_button_option = ftxui::ButtonOption::Border();
   centered_button_option.transform = [](const ftxui::EntryState& state) {
@@ -228,6 +235,8 @@ int main(){
       | ftxui::clear_under;
   });
 
+
+
   auto sortBox = ftxui::Renderer(sort , [&] {
     return ftxui::window(ftxui::text("Sort"),
           sort->Render() | ftxui::xframe
@@ -305,13 +314,24 @@ int main(){
     return ftxui::vbox(
         qNavAddButton->Render()
       );
-    });
-    
+  });
 
-  auto locationBox = ftxui::Renderer([&] {
+  auto locationBarOption = ftxui::InputOption::Default();
+
+  auto locationBarInput = ftxui::Input(&context.locationBarText, "Enter Location");
+
+  auto locationBox = ftxui::Renderer(locationBarInput, [&] {
     return ftxui::window(ftxui::text("Location"),
-      ftxui::text(context.currentPath) | ftxui::bold
+      locationBarInput->Render()
     );
+  });
+
+  auto locationLayout = ftxui::CatchEvent(locationBox, [&](ftxui::Event event) {
+    if(event == ftxui::Event::Return){
+      ElementLogic::OnLocationBarSubmit(context);
+      return true;
+    }
+    return false;
   });
 
   auto previewBox = ftxui::Renderer([&] {
@@ -341,7 +361,7 @@ int main(){
 
   int selectedMiddleChild = 2;
   auto middlePane = ftxui::Container::Vertical({
-    locationBox,
+    locationLayout,
     sortBox,
     menuLayout,
     exceptionBox
@@ -403,7 +423,6 @@ int main(){
         }
         return false;
   });
-
 
   auto mainLayoutDimmable = ftxui::Renderer(mainLayout, [&] {
     auto element = mainLayout->Render();

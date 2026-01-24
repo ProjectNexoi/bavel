@@ -1,11 +1,13 @@
 TODO:
 - File/Folder Previewing/Information
-- Navigation using Location Bar
 - Copy & Paste
 - Search Functionality
-- Renaming files/folders
+- Fixing the Sort Function
+- Add Sorting By Size
 
 DONE:
 - Quick Navigation
 - File Editing using Vim/NVim
 - Creating/Removing files/folders
+- Renaming files/folders
+- Navigation using Location Bar
