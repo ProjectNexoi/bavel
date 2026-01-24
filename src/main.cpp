@@ -32,7 +32,7 @@ namespace fs = std::filesystem;
 #include "ftxui/component/loop.hpp"
 
 int main(){
-  //Initialize context
+  // Initialize context
   Context context;
   context.exception = "";
   context.anyModalActive = false;
@@ -48,17 +48,19 @@ int main(){
   context.locationBarText = "";
 
 
-  //Sets window to fill terminal
+  // Sets window to fill terminal
+  /* 
   struct winsize size;
-  ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
-  auto screen = ftxui::ScreenInteractive::FixedSize(size.ws_col,size.ws_row);
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, &size); 
+  */
+  auto screen = ftxui::ScreenInteractive::Fullscreen();
 
-  //Get user's home directory
+  // Get user's home directory
   struct passwd *pw = getpwuid(getuid());
   context.homedir = pw->pw_dir;
 
-  //fetch json data
-  if(!fs::exists(std::string(context.homedir) + "/.bavel/data.json")){ //if no data, then make the file
+  // Fetch json data
+  if(!fs::exists(std::string(context.homedir) + "/.bavel/data.json")){ // If no data, then make the file
     fs::create_directories(std::string(context.homedir) + "/.bavel");
     std::ofstream(std::string(context.homedir) + "/.bavel/data.json");
   }
@@ -66,14 +68,17 @@ int main(){
     std::ifstream(std::string(context.homedir) + "/.bavel/data.json") >> context.data;
   }
 
-  try{context.sortType = SortTypes(context.data["sortType"].get<int>());}catch(std::exception& e){}
+  try{context.sortType = SortTypes(context.data["sortType"].get<int>());}catch(std::exception& e){
+    context.data["sortType"] = context.sortType;
+    std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
+  }
 
   
-  //Fetches the current directory's content
+  // Fetches the current directory's content
   context.currentPath = context.homedir;
   NavigateToPath(context, context.currentPath);
 
-  //QuickNav entries
+  // QuickNav entries
   try{context.qNavPaths = context.data["qNavEntries"].get<std::vector<std::string>>();}
   catch(std::exception& e){context.exception = e.what();}
   ProcessingFuncs::ParseQNavPathsToEntries(context);
@@ -95,7 +100,7 @@ int main(){
   ftxui::Component qNavMenu = ftxui::Menu(&context.qNavEntries, &qNavSelected, qNavMenuOption);
 
 
-  //QuickNav add new entry button
+  // QuickNav add new entry button
   ftxui::Component qNavAddButton = ftxui::Button("Add Current Path", [&]{
       context.qNavPaths.push_back(context.currentPath);
       context.data["qNavEntries"] = context.qNavPaths;
