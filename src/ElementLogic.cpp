@@ -1,7 +1,10 @@
 #include "Header.hpp"
 #include <filesystem>
+#include <future>
+#include <thread>
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include <unistd.h>
 
 namespace fs = std::filesystem;
 
@@ -9,6 +12,10 @@ namespace ElementLogic {
     void OnSelectedMenuOption(
         Context& context,
         int& selected) {
+          if (access(context.currentContent[selected]->GetPath().c_str(), R_OK | X_OK) != 0) {
+            context.exception = "Permission denied";
+            return;
+          }
         try{
             context.exception = "";
             std::string pathDestination;
@@ -152,13 +159,26 @@ namespace ElementLogic {
 
     void UpdateInformationBox(Context& context, int& selected){
       ListItem* item = context.currentContent[selected];
+      bool isBack = false;
       if(item->GetType() == ItemTypes::BACK){
-        item = new ListItem(context.currentPath);
+        item = new ListItem(fs::directory_entry(context.currentPath));
+        isBack = true;
       }
       context.metadataContext.itemName = item->GetFileName();
       context.metadataContext.itemType = item->GetType() == ItemTypes::DIR ? "Directory" : "File";
       context.metadataContext.itemLastWrite = ProcessingFuncs::FsTimeToString(item->GetLastOpened());
-      context.metadataContext.itemSize = std::to_string(item->GetSize());
+      auto promise = std::make_shared<std::promise<std::string>>();
+      context.metadataContext.itemSize = promise->get_future().share();
+
+      std::thread([promise, item, isBack]() {
+          uintmax_t size = item->GetSize();
+          std::string sizeStr = std::to_string(size);
+          if (isBack) {
+              delete item;
+          }
+          promise->set_value(sizeStr);
+      }).detach();
+
       context.metadataContext.itemOwner = item->GetOwner();
       context.metadataContext.itemPath = item->GetPath();
     }

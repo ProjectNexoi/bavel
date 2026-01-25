@@ -250,7 +250,17 @@ int main(){
     ftxui::Renderer([] {return ftxui::filler();}),
     ftxui::Container::Horizontal({
       ftxui::Renderer([] {return ftxui::text("Size: ");}),
-      ftxui::Renderer([&] {return ftxui::text(context.metadataContext.itemSize);})
+      ftxui::Renderer([&] {
+        if (!context.metadataContext.itemSize.valid()) {
+          return ftxui::text("N/A");
+        }
+        // Non-blocking check for availability
+        if (context.metadataContext.itemSize.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+           return ftxui::text(context.metadataContext.itemSize.get());
+        } else {
+           return ftxui::text("Calculating...");
+        }
+      })
     }) | ftxui::center | ftxui::bold,
     ftxui::Renderer([] {return ftxui::filler();}),
     ftxui::Container::Horizontal({

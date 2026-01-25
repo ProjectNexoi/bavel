@@ -1,6 +1,7 @@
 #ifndef HEADER_HPP
 #define HEADER_HPP
 #include <filesystem>
+#include <future>
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
@@ -30,11 +31,13 @@ class ListItem{
         std::filesystem::file_time_type lastOpened;
         uintmax_t size;
         std::string owner;
+        bool wasSizeFetched = false;
+        bool wasOwnerFetched = false;
     
     public:
         ListItem(ItemTypes t, std::string p, std::filesystem::file_time_type l);
         ListItem(ItemTypes type, std::string path);
-        ListItem(std::string path);
+        ListItem(std::filesystem::directory_entry entry);
         void SetType(ItemTypes t);
         ItemTypes GetType();
         void SetPath(std::string p);
@@ -51,11 +54,12 @@ class ListItem{
 
 };
 
+
 struct MetadataContext{
   std::string itemName = "";
   std::string itemType = "";
   std::string itemLastWrite = "";
-  std::string itemSize = "";
+  std::shared_future<std::string> itemSize;
   std::string itemOwner = "";
   std::string itemPath = "";
 };
@@ -79,6 +83,7 @@ struct Context{
 void PathToItemList(std::string path, Context& context);
 void SortItemList(Context& context);
 void NavigateToPath(Context& context, std::string path);
+uintmax_t GetDirectorySize(std::filesystem::directory_entry entry);
 
 namespace ProcessingFuncs{
     void StringifyContent(Context& context);
