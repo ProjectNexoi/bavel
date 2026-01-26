@@ -32,7 +32,6 @@ namespace fs = std::filesystem;
 #include "ftxui/component/loop.hpp"
 
 int main(){
-  // Initialize context
   Context context;
 
   // Sets window to fill terminal
@@ -52,12 +51,12 @@ int main(){
     std::ofstream(std::string(context.homedir) + "/.bavel/data.json");
   }
   if(!fs::is_empty(std::string(context.homedir) + "/.bavel/data.json")){
-    std::ifstream(std::string(context.homedir) + "/.bavel/data.json") >> context.data;
+    DataLoader::LoadFileToData(context);
   }
 
   try{context.sortType = SortTypes(context.data["sortType"].get<int>());}catch(std::exception& e){
     context.data["sortType"] = context.sortType;
-    std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
+    DataLoader::SaveDataToFile(context);
   }
 
   
@@ -74,7 +73,7 @@ int main(){
   int qNavSelected = 0;
   auto qNavMenuOption = ftxui::MenuOption(ftxui::MenuOption::Vertical());
   qNavMenuOption.elements_prefix = []{ 
-    return ftxui::text("                                  "); }; // So that the leftpane doesn't change widths whenever a user adds/deletes a quicknav entry 
+    return ftxui::text(""); };
   qNavMenuOption.entries_option.transform = [](const ftxui::EntryState& state) {
     auto element = ftxui::text(" " + state.label + " ");
     if (state.focused) {
@@ -93,7 +92,7 @@ int main(){
   ftxui::Component qNavAddButton = ftxui::Button("Add Current Path", [&]{
       context.qNavPaths.push_back(context.currentPath);
       context.data["qNavEntries"] = context.qNavPaths;
-      std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
+      DataLoader::SaveDataToFile(context);
       ProcessingFuncs::ParseQNavPathsToEntries(context);
   });
 
@@ -326,11 +325,7 @@ int main(){
         qNavMenu->Render()
       ) | ftxui::flex,
       ftxui::separator(),
-      ftxui::text("Highlight an entry") | ftxui::center,
-      ftxui::text("and press [Enter]") | ftxui::center,
-      ftxui::text("to navigate to it") | ftxui::center,
-      ftxui::text("or press [Delete]") | ftxui::center,
-      ftxui::text("to remove it") | ftxui::center
+      ftxui::paragraph("Highlight an entry and press [Enter] to navigate to it or press [Delete] to remove it. Reorder with [Ctrl+Up] and [Ctrl+Down].") 
     ) | ftxui::flex;
     });
 
@@ -338,10 +333,19 @@ int main(){
     if(event == ftxui::Event::Delete){
             context.qNavPaths.erase(context.qNavPaths.begin() + qNavSelected);
             context.data["qNavEntries"] = context.qNavPaths;
-            std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
+            DataLoader::SaveDataToFile(context);
             ProcessingFuncs::ParseQNavPathsToEntries(context);
             return true;
         }
+
+    if(event == ftxui::Event::ArrowUpCtrl){
+      ElementLogic::OnQNavReorder(context, qNavSelected, ReorderDirection::UP);
+      return true;
+    }
+    if(event == ftxui::Event::ArrowDownCtrl){
+      ElementLogic::OnQNavReorder(context, qNavSelected, ReorderDirection::DOWN);
+      return true;
+    }
     return false;
   });
 
@@ -396,7 +400,7 @@ int main(){
     return ftxui::window(ftxui::text("Quick Navigation"),
       leftPaneContainer->Render()
     );
-  });
+  }) | ftxui::size(ftxui::WidthOrHeight::WIDTH, ftxui::Constraint::EQUAL, 36);
 
   int selectedMiddleChild = 2;
   auto middlePane = ftxui::Container::Vertical({

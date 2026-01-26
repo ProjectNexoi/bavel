@@ -23,6 +23,11 @@ enum SortTypes{
     TIME_DESC = 3,
 };
 
+enum ReorderDirection{
+    UP = 0,
+    DOWN = 1
+};
+
 class ListItem{
     private:
         ItemTypes type;
@@ -106,5 +111,11 @@ namespace ElementLogic{
     void OnSelectedRenameElementButton(Context& context, int& selected, std::string& newName);
     void OnLocationBarSubmit(Context& context);
     void UpdateInformationBox(Context& context, int& selected);
+    void OnQNavReorder(Context& context, int& selected, ReorderDirection direction);
+}
+
+namespace DataLoader{
+    void LoadFileToData(Context& context);
+    void SaveDataToFile(Context& context);
 }
 #endif 

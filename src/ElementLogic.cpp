@@ -45,7 +45,7 @@ namespace ElementLogic {
     void OnSelectedSortOption(Context& context){
       SortItemList(context);
       context.data["sortType"] = context.sortType;
-      std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
+      DataLoader::SaveDataToFile(context);
       ProcessingFuncs::StringifyContent(context);
     }
 
@@ -66,7 +66,7 @@ namespace ElementLogic {
            context.data["qNavEntries"] = nlohmann::json::array();
         }
         context.data["qNavEntries"].push_back(context.currentPath);
-        std::ofstream(std::string(context.homedir) + "/.bavel/data.json") << context.data;
+        DataLoader::SaveDataToFile(context);
       }
       catch(const fs::filesystem_error &e){
         context.exception = e.what();
@@ -180,5 +180,26 @@ namespace ElementLogic {
 
       context.metadataContext.itemOwner = item->GetOwner();
       context.metadataContext.itemPath = item->GetPath();
+    }
+
+    void OnQNavReorder(Context& context, int& selected, ReorderDirection direction){
+      if(direction == ReorderDirection::UP){
+        if(selected == 0){
+          return;
+        }
+        std::swap(context.qNavPaths[selected], context.qNavPaths[selected - 1]);
+        std::swap(context.qNavEntries[selected], context.qNavEntries[selected - 1]);
+        selected--;
+      }
+      else if(direction == ReorderDirection::DOWN){
+        if(selected == context.qNavPaths.size() - 1){
+          return;
+        }
+        std::swap(context.qNavPaths[selected], context.qNavPaths[selected + 1]);
+        std::swap(context.qNavEntries[selected], context.qNavEntries[selected + 1]);
+        selected++;
+      }
+      context.data["qNavEntries"] = context.qNavPaths;
+      DataLoader::SaveDataToFile(context);
     }
 }
